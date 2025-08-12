@@ -5,14 +5,15 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GPTSession {
-    private static String sessionId = null; // hanya sekali untuk 1 user
+    private static String sessionId = null;
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        // Buat sessionId sekali saja
         if (sessionId == null) {
             sessionId = "USER" + new Random().nextInt(1000000);
             System.out.println("📌 Session ID dibuat: " + sessionId);
@@ -29,7 +30,6 @@ public class GPTSession {
 
             try {
                 String encodedQuery = URLEncoder.encode(query, "UTF-8");
-
                 String apiUrl = "https://api.neoxr.eu/api/gpt4-session?q="
                         + encodedQuery
                         + "&session=" + sessionId
@@ -47,22 +47,17 @@ public class GPTSession {
                 }
                 in.close();
 
-                // Bersihin hasil JSON mentah
-                String res = response.toString();
+                String resStr = response.toString();
 
-                // Cari "data" atau "result" manual
-                String answer = "";
-                if (res.contains("\"data\"")) {
-                    answer = ambilValue(res, "data");
-                } else if (res.contains("\"result\"")) {
-                    answer = ambilValue(res, "result");
-                } else {
-                    answer = res;
+                // Ambil "message" dari objek "data"
+                String message = extractNestedJsonValue(resStr, "data", "message");
+
+                if (message == null || message.isEmpty()) {
+                    message = "(Tidak ada pesan dari GPT)";
                 }
 
-                // Tampilkan clean
                 System.out.println("\n🤖 GPT:");
-                System.out.println(answer);
+                System.out.println(message);
 
             } catch (Exception e) {
                 System.out.println("❌ Gagal mengambil jawaban: " + e.getMessage());
@@ -72,24 +67,20 @@ public class GPTSession {
         scanner.close();
     }
 
-    // Fungsi untuk ambil value dari JSON string mentah
-    private static String ambilValue(String json, String key) {
-        try {
-            int start = json.indexOf("\"" + key + "\"");
-            if (start == -1) return json;
-            start = json.indexOf(":", start) + 1;
-            while (start < json.length() && (json.charAt(start) == ' ' || json.charAt(start) == '\"')) start++;
-            int end = start;
-            boolean escape = false;
-            while (end < json.length()) {
-                char c = json.charAt(end);
-                if (c == '\"' && !escape) break;
-                escape = (c == '\\') && !escape;
-                end++;
+    // Fungsi ambil nested key seperti data.message
+    private static String extractNestedJsonValue(String json, String parentKey, String childKey) {
+        String parentPattern = "\"" + parentKey + "\":\\{([^}]*)\\}";
+        Pattern p1 = Pattern.compile(parentPattern);
+        Matcher m1 = p1.matcher(json);
+        if (m1.find()) {
+            String innerJson = m1.group(1);
+            String childPattern = "\"" + childKey + "\":\"([^\"]*)\"";
+            Pattern p2 = Pattern.compile(childPattern);
+            Matcher m2 = p2.matcher(innerJson);
+            if (m2.find()) {
+                return m2.group(1).replace("\\n", "\n").replace("\\\"", "\"");
             }
-            return json.substring(start, end).replace("\\n", "\n").replace("\\\"", "\"");
-        } catch (Exception e) {
-            return json;
         }
+        return null;
     }
 }
