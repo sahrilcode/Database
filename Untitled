@@ -7,15 +7,15 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class GPTSession {
-    private static String sessionId = null;
+    private static String sessionId = null; // session untuk 1 user
     private static final String API_KEY = "GetsuzoCp7";
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        // Buat sessionId sekali saja (6 digit angka)
+        // Buat sessionId angka saja, sekali saja
         if (sessionId == null) {
-            sessionId = String.valueOf(100000 + new Random().nextInt(900000));
+            sessionId = String.valueOf(100000 + new Random().nextInt(900000)); // 6 digit angka random
             System.out.println("📌 Session ID dibuat: " + sessionId);
         }
 
@@ -36,11 +36,13 @@ public class GPTSession {
                 continue;
             }
 
-            String apiUrl = "https://api.neoxr.eu/api/gpt4-session?q="
-                            + encodedQuery
-                            + "&session=" + sessionId
+            // URL API
+            String apiUrl = "https://api.neoxr.eu/api/gpt4-session?q=" 
+                            + encodedQuery 
+                            + "&session=" + sessionId 
                             + "&apikey=" + API_KEY;
 
+            // Coba kirim request (max 2 kali)
             String response = sendRequest(apiUrl);
             if (response == null) {
                 System.out.println("🔄 Coba ulang...");
@@ -48,13 +50,8 @@ public class GPTSession {
             }
 
             if (response != null) {
-                String message = extractMessage(response);
-                if (message != null) {
-                    System.out.println("\n🤖 Jawaban GPT:");
-                    System.out.println(message);
-                } else {
-                    System.out.println("❌ Tidak bisa membaca message dari API.");
-                }
+                System.out.println("\n🤖 Jawaban GPT:");
+                System.out.println(response);
             } else {
                 System.out.println("❌ Gagal mendapatkan respon dari API setelah 2 kali percobaan.");
             }
@@ -63,6 +60,7 @@ public class GPTSession {
         scanner.close();
     }
 
+    // Fungsi kirim request
     private static String sendRequest(String apiUrl) {
         try {
             HttpURLConnection conn = (HttpURLConnection) new URL(apiUrl).openConnection();
@@ -80,39 +78,7 @@ public class GPTSession {
 
             return response.toString();
         } catch (Exception e) {
-            return null;
-        }
-    }
-
-    // Ambil data.message dari JSON secara manual
-    private static String extractMessage(String json) {
-        try {
-            String dataKey = "\"data\":";
-            int dataStart = json.indexOf(dataKey);
-            if (dataStart == -1) return null;
-
-            int braceStart = json.indexOf("{", dataStart);
-            if (braceStart == -1) return null;
-
-            int braceEnd = json.indexOf("}", braceStart);
-            if (braceEnd == -1) return null;
-
-            String dataObj = json.substring(braceStart + 1, braceEnd);
-
-            String messageKey = "\"message\":\"";
-            int msgStart = dataObj.indexOf(messageKey);
-            if (msgStart == -1) return null;
-            msgStart += messageKey.length();
-
-            int msgEnd = dataObj.indexOf("\"", msgStart);
-            if (msgEnd == -1) return null;
-
-            String message = dataObj.substring(msgStart, msgEnd)
-                    .replace("\\n", "\n")
-                    .replace("\\\"", "\"");
-            return message;
-        } catch (Exception e) {
-            return null;
+            return null; // biar auto retry jalan
         }
     }
 }
