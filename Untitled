@@ -13,6 +13,7 @@ public class GPTSession {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
+        // Buat sessionId sekali saja (6 digit angka)
         if (sessionId == null) {
             sessionId = String.valueOf(100000 + new Random().nextInt(900000));
             System.out.println("📌 Session ID dibuat: " + sessionId);
@@ -36,9 +37,9 @@ public class GPTSession {
             }
 
             String apiUrl = "https://api.neoxr.eu/api/gpt4-session?q="
-                    + encodedQuery
-                    + "&session=" + sessionId
-                    + "&apikey=" + API_KEY;
+                            + encodedQuery
+                            + "&session=" + sessionId
+                            + "&apikey=" + API_KEY;
 
             String response = sendRequest(apiUrl);
             if (response == null) {
@@ -86,13 +87,30 @@ public class GPTSession {
     // Ambil data.message dari JSON secara manual
     private static String extractMessage(String json) {
         try {
-            String key = "\"message\":\"";
-            int start = json.indexOf(key);
-            if (start == -1) return null;
-            start += key.length();
-            int end = json.indexOf("\"", start);
-            if (end == -1) return null;
-            return json.substring(start, end);
+            String dataKey = "\"data\":";
+            int dataStart = json.indexOf(dataKey);
+            if (dataStart == -1) return null;
+
+            int braceStart = json.indexOf("{", dataStart);
+            if (braceStart == -1) return null;
+
+            int braceEnd = json.indexOf("}", braceStart);
+            if (braceEnd == -1) return null;
+
+            String dataObj = json.substring(braceStart + 1, braceEnd);
+
+            String messageKey = "\"message\":\"";
+            int msgStart = dataObj.indexOf(messageKey);
+            if (msgStart == -1) return null;
+            msgStart += messageKey.length();
+
+            int msgEnd = dataObj.indexOf("\"", msgStart);
+            if (msgEnd == -1) return null;
+
+            String message = dataObj.substring(msgStart, msgEnd)
+                    .replace("\\n", "\n")
+                    .replace("\\\"", "\"");
+            return message;
         } catch (Exception e) {
             return null;
         }
