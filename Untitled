@@ -7,15 +7,14 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class GPTSession {
-    private static String sessionId = null; // session untuk 1 user
+    private static String sessionId = null;
     private static final String API_KEY = "GetsuzoCp7";
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        // Buat sessionId angka saja, sekali saja
         if (sessionId == null) {
-            sessionId = String.valueOf(100000 + new Random().nextInt(900000)); // 6 digit angka random
+            sessionId = String.valueOf(100000 + new Random().nextInt(900000));
             System.out.println("📌 Session ID dibuat: " + sessionId);
         }
 
@@ -36,10 +35,10 @@ public class GPTSession {
                 continue;
             }
 
-            String apiUrl = "https://api.neoxr.eu/api/gpt4-session?q=" 
-                            + encodedQuery 
-                            + "&session=" + sessionId 
-                            + "&apikey=" + API_KEY;
+            String apiUrl = "https://api.neoxr.eu/api/gpt4-session?q="
+                    + encodedQuery
+                    + "&session=" + sessionId
+                    + "&apikey=" + API_KEY;
 
             String response = sendRequest(apiUrl);
             if (response == null) {
@@ -53,7 +52,7 @@ public class GPTSession {
                     System.out.println("\n🤖 Jawaban GPT:");
                     System.out.println(message);
                 } else {
-                    System.out.println("❌ Gagal membaca message dari API.");
+                    System.out.println("❌ Tidak bisa membaca message dari API.");
                 }
             } else {
                 System.out.println("❌ Gagal mendapatkan respon dari API setelah 2 kali percobaan.");
@@ -84,7 +83,7 @@ public class GPTSession {
         }
     }
 
-    // Ambil hanya data.message dari JSON manual
+    // Ambil data.message dari JSON secara manual
     private static String extractMessage(String json) {
         try {
             String key = "\"message\":\"";
