@@ -1,0 +1,84 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Random;
+import java.util.Scanner;
+
+public class GPTSession {
+    private static String sessionId = null; // session untuk 1 user
+    private static final String API_KEY = "GetsuzoCp7";
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        // Buat sessionId angka saja, sekali saja
+        if (sessionId == null) {
+            sessionId = String.valueOf(100000 + new Random().nextInt(900000)); // 6 digit angka random
+            System.out.println("📌 Session ID dibuat: " + sessionId);
+        }
+
+        while (true) {
+            System.out.print("\nMasukkan pertanyaan (atau 'exit' untuk keluar): ");
+            String query = scanner.nextLine();
+
+            if (query.equalsIgnoreCase("exit")) {
+                System.out.println("🚪 Program dihentikan.");
+                break;
+            }
+
+            String encodedQuery;
+            try {
+                encodedQuery = URLEncoder.encode(query, "UTF-8");
+            } catch (Exception e) {
+                System.out.println("❌ Error encode query: " + e.getMessage());
+                continue;
+            }
+
+            // URL API
+            String apiUrl = "https://api.neoxr.eu/api/gpt4-session?q=" 
+                            + encodedQuery 
+                            + "&session=" + sessionId 
+                            + "&apikey=" + API_KEY;
+
+            // Coba kirim request (max 2 kali)
+            String response = sendRequest(apiUrl);
+            if (response == null) {
+                System.out.println("🔄 Coba ulang...");
+                response = sendRequest(apiUrl);
+            }
+
+            if (response != null) {
+                System.out.println("\n🤖 Jawaban GPT:");
+                System.out.println(response);
+            } else {
+                System.out.println("❌ Gagal mendapatkan respon dari API setelah 2 kali percobaan.");
+            }
+        }
+
+        scanner.close();
+    }
+
+    // Fungsi kirim request
+    private static String sendRequest(String apiUrl) {
+        try {
+            HttpURLConnection conn = (HttpURLConnection) new URL(apiUrl).openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", "Java-NetBeans");
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder response = new StringBuilder();
+            String inputLine;
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            return response.toString();
+        } catch (Exception e) {
+            return null; // biar auto retry jalan
+        }
+    }
+}
