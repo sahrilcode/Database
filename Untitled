@@ -5,22 +5,22 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Random;
 import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class GPTSession {
-    private static String sessionId = null;
+    private static String sessionId = null; // session untuk 1 user
+    private static final String API_KEY = "GetsuzoCp7";
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
+        // Buat sessionId angka saja, sekali saja
         if (sessionId == null) {
-            sessionId = "USER" + new Random().nextInt(1000000);
+            sessionId = String.valueOf(100000 + new Random().nextInt(900000)); // 6 digit angka random
             System.out.println("📌 Session ID dibuat: " + sessionId);
         }
 
         while (true) {
-            System.out.print("\n💬 Masukkan pertanyaan (atau 'exit' untuk keluar): ");
+            System.out.print("\nMasukkan pertanyaan (atau 'exit' untuk keluar): ");
             String query = scanner.nextLine();
 
             if (query.equalsIgnoreCase("exit")) {
@@ -28,59 +28,74 @@ public class GPTSession {
                 break;
             }
 
+            String encodedQuery;
             try {
-                String encodedQuery = URLEncoder.encode(query, "UTF-8");
-                String apiUrl = "https://api.neoxr.eu/api/gpt4-session?q="
-                        + encodedQuery
-                        + "&session=" + sessionId
-                        + "&apikey=GetsuzoCp7";
-
-                HttpURLConnection conn = (HttpURLConnection) new URL(apiUrl).openConnection();
-                conn.setRequestMethod("GET");
-                conn.setRequestProperty("User-Agent", "Java-NetBeans");
-
-                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                StringBuilder response = new StringBuilder();
-                String inputLine;
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
-
-                String resStr = response.toString();
-
-                // Ambil "message" dari objek "data"
-                String message = extractNestedJsonValue(resStr, "data", "message");
-
-                if (message == null || message.isEmpty()) {
-                    message = "(Tidak ada pesan dari GPT)";
-                }
-
-                System.out.println("\n🤖 GPT:");
-                System.out.println(message);
-
+                encodedQuery = URLEncoder.encode(query, "UTF-8");
             } catch (Exception e) {
-                System.out.println("❌ Gagal mengambil jawaban: " + e.getMessage());
+                System.out.println("❌ Error encode query: " + e.getMessage());
+                continue;
+            }
+
+            String apiUrl = "https://api.neoxr.eu/api/gpt4-session?q=" 
+                            + encodedQuery 
+                            + "&session=" + sessionId 
+                            + "&apikey=" + API_KEY;
+
+            String response = sendRequest(apiUrl);
+            if (response == null) {
+                System.out.println("🔄 Coba ulang...");
+                response = sendRequest(apiUrl);
+            }
+
+            if (response != null) {
+                String message = extractMessage(response);
+                if (message != null) {
+                    System.out.println("\n🤖 Jawaban GPT:");
+                    System.out.println(message);
+                } else {
+                    System.out.println("❌ Gagal membaca message dari API.");
+                }
+            } else {
+                System.out.println("❌ Gagal mendapatkan respon dari API setelah 2 kali percobaan.");
             }
         }
 
         scanner.close();
     }
 
-    // Fungsi ambil nested key seperti data.message
-    private static String extractNestedJsonValue(String json, String parentKey, String childKey) {
-        String parentPattern = "\"" + parentKey + "\":\\{([^}]*)\\}";
-        Pattern p1 = Pattern.compile(parentPattern);
-        Matcher m1 = p1.matcher(json);
-        if (m1.find()) {
-            String innerJson = m1.group(1);
-            String childPattern = "\"" + childKey + "\":\"([^\"]*)\"";
-            Pattern p2 = Pattern.compile(childPattern);
-            Matcher m2 = p2.matcher(innerJson);
-            if (m2.find()) {
-                return m2.group(1).replace("\\n", "\n").replace("\\\"", "\"");
+    private static String sendRequest(String apiUrl) {
+        try {
+            HttpURLConnection conn = (HttpURLConnection) new URL(apiUrl).openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", "Java-NetBeans");
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder response = new StringBuilder();
+            String inputLine;
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
             }
+            in.close();
+
+            return response.toString();
+        } catch (Exception e) {
+            return null;
         }
-        return null;
+    }
+
+    // Ambil hanya data.message dari JSON manual
+    private static String extractMessage(String json) {
+        try {
+            String key = "\"message\":\"";
+            int start = json.indexOf(key);
+            if (start == -1) return null;
+            start += key.length();
+            int end = json.indexOf("\"", start);
+            if (end == -1) return null;
+            return json.substring(start, end);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
