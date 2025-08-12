@@ -5,7 +5,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Random;
 import java.util.Scanner;
-import org.json.JSONObject;
 
 public class GPTSession {
     private static String sessionId = null; // hanya sekali untuk 1 user
@@ -29,21 +28,17 @@ public class GPTSession {
             }
 
             try {
-                // Encode query untuk URL
                 String encodedQuery = URLEncoder.encode(query, "UTF-8");
 
-                // URL API
                 String apiUrl = "https://api.neoxr.eu/api/gpt4-session?q="
                         + encodedQuery
                         + "&session=" + sessionId
                         + "&apikey=GetsuzoCp7";
 
-                // Bikin koneksi
                 HttpURLConnection conn = (HttpURLConnection) new URL(apiUrl).openConnection();
                 conn.setRequestMethod("GET");
                 conn.setRequestProperty("User-Agent", "Java-NetBeans");
 
-                // Baca respon
                 BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 StringBuilder response = new StringBuilder();
                 String inputLine;
@@ -52,17 +47,17 @@ public class GPTSession {
                 }
                 in.close();
 
-                // Parsing JSON
-                JSONObject json = new JSONObject(response.toString());
+                // Bersihin hasil JSON mentah
+                String res = response.toString();
 
-                // Ambil field jawaban (sesuaikan sama struktur API)
-                String answer;
-                if (json.has("data")) {
-                    answer = json.getString("data");
-                } else if (json.has("result")) {
-                    answer = json.getString("result");
+                // Cari "data" atau "result" manual
+                String answer = "";
+                if (res.contains("\"data\"")) {
+                    answer = ambilValue(res, "data");
+                } else if (res.contains("\"result\"")) {
+                    answer = ambilValue(res, "result");
                 } else {
-                    answer = response.toString(); // fallback
+                    answer = res;
                 }
 
                 // Tampilkan clean
@@ -75,5 +70,26 @@ public class GPTSession {
         }
 
         scanner.close();
+    }
+
+    // Fungsi untuk ambil value dari JSON string mentah
+    private static String ambilValue(String json, String key) {
+        try {
+            int start = json.indexOf("\"" + key + "\"");
+            if (start == -1) return json;
+            start = json.indexOf(":", start) + 1;
+            while (start < json.length() && (json.charAt(start) == ' ' || json.charAt(start) == '\"')) start++;
+            int end = start;
+            boolean escape = false;
+            while (end < json.length()) {
+                char c = json.charAt(end);
+                if (c == '\"' && !escape) break;
+                escape = (c == '\\') && !escape;
+                end++;
+            }
+            return json.substring(start, end).replace("\\n", "\n").replace("\\\"", "\"");
+        } catch (Exception e) {
+            return json;
+        }
     }
 }
