@@ -1,5 +1,10 @@
 <?php
+session_start();
 header("Content-Type: application/json");
+
+if (!isset($_SESSION['sessionId'])) {
+    $_SESSION['sessionId'] = uniqid(rand(), true);
+}
 
 if (!isset($_POST['q']) || trim($_POST['q']) === '') {
     echo json_encode(["status" => false, "message" => "Pertanyaan kosong"]);
@@ -7,7 +12,7 @@ if (!isset($_POST['q']) || trim($_POST['q']) === '') {
 }
 
 $query = $_POST['q'];
-$sessionId = "5373828261819"; // ganti dengan sessionId
+$sessionId = $_SESSION['sessionId'];
 $apiKey = "GetsuzoCp7";
 
 $url = "https://api.neoxr.eu/api/gpt4-session?q=" . urlencode($query) .
