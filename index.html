@@ -7,42 +7,82 @@
 <style>
     body {
         font-family: 'Segoe UI', sans-serif;
-        background: linear-gradient(135deg, #232526, #414345);
+        background: url('https://get1.imglarger.com/upscaler/results/bymJwtTq_4x.jpg') no-repeat center center fixed;
+        background-size: cover;
+        margin: 0;
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
-        margin: 0;
         color: white;
     }
-
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(3px);
+        z-index: 0;
+    }
     #chatbox {
+        position: relative;
+        z-index: 1;
         width: 420px;
         height: 90vh;
-        background: rgba(0,0,0,0.7);
+        background: rgba(20,20,20,0.6);
+        backdrop-filter: blur(10px);
         border-radius: 15px;
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        box-shadow: 0 0 20px rgba(0,0,0,0.6);
         animation: fadeIn 0.6s ease;
     }
-
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
     }
-
     #header {
-        background: #1f1f1f;
+        background: rgba(0,0,0,0.4);
         padding: 15px;
         text-align: center;
         font-weight: bold;
         font-size: 1.2em;
         letter-spacing: 1px;
-        border-bottom: 1px solid #333;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        position: relative;
     }
-
+    /* Menu kanan atas */
+    #menuBtn {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        cursor: pointer;
+        font-size: 18px;
+        color: white;
+    }
+    #contextMenu {
+        display: none;
+        position: absolute;
+        top: 40px;
+        right: 10px;
+        background: rgba(0,0,0,0.85);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 5px;
+        overflow: hidden;
+        z-index: 100;
+    }
+    #contextMenu div {
+        padding: 8px 15px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        white-space: nowrap;
+    }
+    #contextMenu div:hover {
+        background: rgba(255,255,255,0.1);
+    }
+    /* Chat area */
     #messages {
         flex: 1;
         padding: 15px;
@@ -51,7 +91,11 @@
         flex-direction: column;
         gap: 10px;
     }
-
+    #messages::-webkit-scrollbar { width: 6px; }
+    #messages::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.3);
+        border-radius: 3px;
+    }
     .msg {
         max-width: 80%;
         padding: 10px 15px;
@@ -59,57 +103,85 @@
         line-height: 1.4em;
         animation: popIn 0.3s ease;
     }
-
     @keyframes popIn {
         from { transform: scale(0.95); opacity: 0; }
         to { transform: scale(1); opacity: 1; }
     }
-
     .user {
-        background: #0d6efd;
+        background: rgba(255,255,255,0.2);
         align-self: flex-end;
     }
-
     .ai {
-        background: #2ecc71;
+        background: rgba(255,255,255,0.1);
+        border-left: 3px solid white;
         align-self: flex-start;
     }
-
     #inputArea {
         display: flex;
         padding: 10px;
-        background: #1f1f1f;
-        border-top: 1px solid #333;
+        background: rgba(0,0,0,0.4);
+        border-top: 1px solid rgba(255,255,255,0.1);
     }
-
     #userInput {
         flex: 1;
         padding: 10px;
         border: none;
         border-radius: 20px;
+        background: rgba(255,255,255,0.1);
+        color: white;
         outline: none;
         font-size: 14px;
     }
-
     #sendBtn {
-        background: #0d6efd;
+        background: white;
         border: none;
-        color: white;
+        color: black;
         padding: 10px 15px;
         margin-left: 10px;
         border-radius: 50%;
         cursor: pointer;
-        transition: background 0.3s ease;
+        transition: background 0.3s ease, transform 0.1s ease;
     }
-
     #sendBtn:hover {
-        background: #0b5ed7;
+        background: #ddd;
+        transform: scale(1.05);
+    }
+    /* Popup About */
+    #aboutPopup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0,0,0,0.9);
+        padding: 20px;
+        border-radius: 10px;
+        width: 300px;
+        box-shadow: 0 0 15px rgba(255,255,255,0.2);
+        z-index: 200;
+        text-align: center;
+    }
+    #aboutPopup h2 { margin-top: 0; }
+    #aboutPopup button {
+        margin-top: 10px;
+        background: white;
+        color: black;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+        border-radius: 5px;
     }
 </style>
 </head>
 <body>
 <div id="chatbox">
-    <div id="header">💬 GPT Chat</div>
+    <div id="header">
+        💬 GPT Chat
+        <div id="menuBtn">☰</div>
+        <div id="contextMenu">
+            <div id="aboutOption">About</div>
+        </div>
+    </div>
     <div id="messages"></div>
     <div id="inputArea">
         <input type="text" id="userInput" placeholder="Ketik pesan lalu Enter...">
@@ -117,14 +189,27 @@
     </div>
 </div>
 
+<!-- Popup About -->
+<div id="aboutPopup">
+    <h2>👤 Author</h2>
+    <p><b>Nama:</b> Raditya Yoga</p>
+    <p><b>Panggilan:</b> Radit</p>
+    <p><b>Kelas:</b> XI RPL</p>
+    <p><b>Hobi:</b> Coding, Eksplorasi AI, Eksploitasi WA</p>
+    <p><b>Kepribadian:</b> Introvert, suka hal elegan & berwibawa</p>
+    <button onclick="document.getElementById('aboutPopup').style.display='none'">Tutup</button>
+</div>
+
 <script>
 const input = document.getElementById("userInput");
 const sendBtn = document.getElementById("sendBtn");
 const messages = document.getElementById("messages");
+const menuBtn = document.getElementById("menuBtn");
+const contextMenu = document.getElementById("contextMenu");
+const aboutPopup = document.getElementById("aboutPopup");
 
 function sendMessage() {
     if (input.value.trim() === "") return;
-
     const userMsg = input.value;
     addMessage(userMsg, "user");
     input.value = "";
@@ -157,6 +242,20 @@ function addMessage(text, sender) {
     messages.appendChild(div);
     messages.scrollTop = messages.scrollHeight;
 }
+
+// Toggle context menu
+menuBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    contextMenu.style.display = contextMenu.style.display === "block" ? "none" : "block";
+});
+document.addEventListener("click", () => {
+    contextMenu.style.display = "none";
+});
+
+// Show About popup
+document.getElementById("aboutOption").addEventListener("click", () => {
+    aboutPopup.style.display = "block";
+});
 </script>
 </body>
 </html>
