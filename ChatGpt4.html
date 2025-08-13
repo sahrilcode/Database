@@ -15,6 +15,7 @@
         align-items: center;
         height: 100vh;
         color: white;
+        position: relative;
     }
     body::before {
         content: "";
@@ -29,14 +30,32 @@
         z-index: 1;
         width: 420px;
         height: 90vh;
-        background: rgba(20,20,20,0.4) url('https://get1.imglarger.com/upscaler/results/bymJwtTq_4x.jpg') center/cover;
-        backdrop-filter: blur(10px);
         border-radius: 15px;
         display: flex;
         flex-direction: column;
         overflow: hidden;
         box-shadow: 0 0 20px rgba(0,0,0,0.6);
         animation: fadeIn 0.6s ease;
+    }
+    /* Background di dalam chatbox */
+    #chatbox::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: url('https://get1.imglarger.com/upscaler/results/bymJwtTq_4x.jpg') center/cover;
+        filter: brightness(0.4) blur(4px);
+        z-index: 0;
+    }
+    #chatbox::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 0;
+    }
+    #header, #messages, #inputArea {
+        position: relative;
+        z-index: 1;
     }
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(20px); }
@@ -52,7 +71,6 @@
         border-bottom: 1px solid rgba(255,255,255,0.1);
         position: relative;
     }
-    /* Menu kanan atas */
     #menuBtn {
         position: absolute;
         top: 50%;
@@ -90,7 +108,6 @@
     #contextMenu div:hover {
         background: rgba(255,255,255,0.1);
     }
-    /* Chat area */
     #messages {
         flex: 1;
         padding: 15px;
@@ -154,7 +171,6 @@
         background: #ddd;
         transform: scale(1.05);
     }
-    /* Popup About */
     #aboutPopup {
         display: none;
         position: fixed;
@@ -167,7 +183,7 @@
         width: 300px;
         box-shadow: 0 0 15px rgba(255,255,255,0.2);
         z-index: 200;
-        text-align: center;
+        text-align: left; /* Rata kiri */
         opacity: 0;
         transition: all 0.3s ease;
     }
@@ -178,6 +194,7 @@
     #aboutPopup h2 {
         margin-top: 0;
         font-weight: 600;
+        text-align: center;
     }
     #aboutPopup p {
         margin: 5px 0;
@@ -185,7 +202,8 @@
         color: #ccc;
     }
     #aboutPopup button {
-        margin-top: 15px;
+        display: block;
+        margin: 15px auto 0;
         background: white;
         color: black;
         border: none;
@@ -212,7 +230,6 @@
     </div>
 </div>
 
-<!-- Popup About -->
 <div id="aboutPopup">
     <h2>👤 Author</h2>
     <p><b>Nama:</b> Raditya Yoga</p>
@@ -266,7 +283,6 @@ function addMessage(text, sender) {
     messages.scrollTop = messages.scrollHeight;
 }
 
-// Toggle context menu
 menuBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     contextMenu.style.display = contextMenu.style.display === "block" ? "none" : "block";
@@ -275,7 +291,6 @@ document.addEventListener("click", () => {
     contextMenu.style.display = "none";
 });
 
-// Show About popup
 document.getElementById("aboutOption").addEventListener("click", () => {
     aboutPopup.classList.add("show");
     aboutPopup.style.display = "block";
