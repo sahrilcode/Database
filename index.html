@@ -1,197 +1,459 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GPT Chat</title>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GPT Chat</title>
+    <!-- Open Graph (untuk Facebook, WhatsApp, Telegram, dll.) -->
+    <meta property="og:title" content="GPT Chat by RaditX7" />
+    <meta property="og:description" content="Chat GPT-4" />
+    <meta property="og:image" content="https://files.catbox.moe/bpatf4.jpg" />
+    <meta property="og:url" content="https://getsuzoai.great-site.net" />
+    <meta property="og:type" content="website" />
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="GPT Chat by RaditX7" />
+    <meta name="twitter:description" content="Chat GPT-4" />
+    <meta name="twitter:image" content="https://files.catbox.moe/bpatf4.jpg" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', sans-serif;
+        -webkit-overflow-scrolling: touch;
+      }
 
-<!-- Open Graph (untuk Facebook, WhatsApp, Telegram, dll.) -->
-<meta property="og:title" content="GPT Chat by RaditX7" />
-<meta property="og:description" content="Chat GPT-4" />
-<meta property="og:image" content="https://files.catbox.moe/bpatf4.jpg" />
-<meta property="og:url" content="https://getsuzoai.great-site.net" />
-<meta property="og:type" content="website" />
+      body {
+        background: url('https://files.catbox.moe/7ap756.jpg') no-repeat center center fixed;
+        background-size: cover;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        position: relative;
+      }
 
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="GPT Chat by RaditX7" />
-<meta name="twitter:description" content="Chat GPT-4" />
-<meta name="twitter:image" content="https://files.catbox.moe/bpatf4.jpg" />
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(3px);
+        z-index: 0;
+      }
 
-<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
-<style>
-html, body { height:100%; margin:0; padding:0; font-family:'Segoe UI',sans-serif; -webkit-overflow-scrolling: touch;}
-body {
-    background: url('https://files.catbox.moe/7ap756.jpg') no-repeat center center fixed;
-    background-size: cover;
-    display:flex; justify-content:center; align-items:center; color:white; position:relative;
-}
-body::before {
-    content:""; position:fixed; inset:0; background:rgba(0,0,0,0.55); backdrop-filter:blur(3px); z-index:0;
-}
-#chatbox {
-    position:relative; z-index:1; width:90%; max-width:420px; height:90vh; border-radius:15px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 0 20px rgba(0,0,0,0.6);
-}
-#chatbox::before { content:""; position:absolute; inset:0; background:url('https://files.catbox.moe/7ap756.jpg') center/cover; filter:brightness(0.4) blur(4px); z-index:0;}
-#chatbox::after { content:""; position:absolute; inset:0; background:rgba(0,0,0,0.45); z-index:0;}
-#header,#messages,#inputArea{position:relative; z-index:1;}
-#header { background:rgba(0,0,0,0.5); padding:15px; text-align:center; font-weight:500; font-size:0.95em; letter-spacing:1px; border-bottom:1px solid rgba(255,255,255,0.1); position:relative; }
-#menuBtn { position:absolute; top:50%; right:10px; transform:translateY(-50%); cursor:pointer; font-size:14px; color:white; padding:3px 6px; background:rgba(255,255,255,0.08); border-radius:4px; transition:background 0.3s;}
-#menuBtn:hover{background:rgba(255,255,255,0.18);}
-#contextMenu{display:none; position:absolute; top:40px; right:10px; background:rgba(0,0,0,0.85); border:1px solid rgba(255,255,255,0.2); border-radius:5px; overflow:hidden; z-index:100; min-width:120px;}
-#contextMenu div{padding:6px 12px; cursor:pointer; transition:background 0.2s ease; font-size:13px;}
-#contextMenu div:hover{background: rgba(255,255,255,0.1);}
-#messages{flex:1; padding:15px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;}
-#messages::-webkit-scrollbar{width:6px;}
-#messages::-webkit-scrollbar-thumb{background: rgba(255,255,255,0.3); border-radius:3px;}
-.msg{max-width:80%; padding:10px 15px; border-radius:15px; line-height:1.4em;}
-.user{background: rgba(255,255,255,0.25); align-self:flex-end;}
-.ai{background: rgba(0,0,0,0.35); border-left:3px solid white; align-self:flex-start;}
-.code-block{font-family:'Courier New',monospace; background:rgba(255,255,255,0.1); padding:10px; border-radius:8px; overflow-x:auto; white-space:pre-wrap; border-left:3px solid #0ff;}
-#inputArea{display:flex; padding:10px; background: rgba(0,0,0,0.5); border-top:1px solid rgba(255,255,255,0.1);}
-#userInput{flex:1; padding:12px; border:none; border-radius:20px; background:rgba(255,255,255,0.12); color:white; outline:none; font-size:16px; -webkit-text-size-adjust:100%;}
-#sendBtn{background:white; border:none; color:black; padding:10px 15px; margin-left:10px; border-radius:50%; cursor:pointer; transition:background 0.3s ease, transform 0.1s ease;}
-#sendBtn:hover{background:#ddd; transform:scale(1.05);}
-#aboutPopup{display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%) scale(0.9); background:rgba(0,0,0,0.92); padding:20px; border-radius:10px; width:90%; max-width:300px; box-shadow:0 0 15px rgba(255,255,255,0.2); z-index:200; text-align:left; opacity:0; transition:all 0.3s ease;}
-#aboutPopup.show{opacity:1; transform:translate(-50%, -50%) scale(1);}
-#aboutPopup h2{margin-top:0; font-weight:600; text-align:center;}
-#aboutPopup p{margin:5px 0; font-size:14px; color:#ccc;}
-#aboutPopup button{display:block; margin:15px auto 0; background:white; color:black; border:none; padding:5px 12px; cursor:pointer; border-radius:5px; font-size:13px;}
-.typing { display:flex; gap:4px; margin-top:4px; }
-.typing div { width:8px; height:8px; background:white; border-radius:50%; animation:blink 1s infinite; }
-.typing div:nth-child(2){animation-delay:0.2s;}
-.typing div:nth-child(3){animation-delay:0.4s;}
-@keyframes blink {0%,80%,100%{opacity:0;} 40%{opacity:1;}}
-</style>
-</head>
-<body>
-<div id="chatbox">
-    <div id="header">
-        💬 GPT Chat
-        <div id="menuBtn">☰</div>
+      #chatbox {
+        position: relative;
+        z-index: 1;
+        width: 90%;
+        max-width: 420px;
+        height: 90vh;
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+      }
+
+      #chatbox::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: url('https://files.catbox.moe/7ap756.jpg') center/cover;
+        filter: brightness(0.4) blur(4px);
+        z-index: 0;
+      }
+
+      #chatbox::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 0;
+      }
+
+      #header,
+      #messages,
+      #inputArea {
+        position: relative;
+        z-index: 1;
+      }
+
+      #header {
+        background: rgba(0, 0, 0, 0.5);
+        padding: 15px;
+        text-align: center;
+        font-weight: 500;
+        font-size: 0.95em;
+        letter-spacing: 1px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+      }
+
+      #menuBtn {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        cursor: pointer;
+        font-size: 14px;
+        color: white;
+        padding: 3px 6px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 4px;
+        transition: background 0.3s;
+      }
+
+      #menuBtn:hover {
+        background: rgba(255, 255, 255, 0.18);
+      }
+
+      #contextMenu {
+        display: none;
+        position: absolute;
+        top: 40px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 5px;
+        overflow: hidden;
+        z-index: 100;
+        min-width: 120px;
+      }
+
+      #contextMenu div {
+        padding: 6px 12px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        font-size: 13px;
+      }
+
+      #contextMenu div:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      #messages {
+        flex: 1;
+        padding: 15px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      #messages::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      #messages::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 3px;
+      }
+
+      .msg {
+        max-width: 80%;
+        padding: 10px 15px;
+        border-radius: 15px;
+        line-height: 1.4em;
+      }
+
+      .user {
+        background: rgba(255, 255, 255, 0.25);
+        align-self: flex-end;
+      }
+
+      .ai {
+        background: rgba(0, 0, 0, 0.35);
+        border-left: 3px solid white;
+        align-self: flex-start;
+      }
+
+      .code-block {
+        font-family: 'Courier New', monospace;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 10px;
+        border-radius: 8px;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        border-left: 3px solid #0ff;
+      }
+
+      #inputArea {
+        display: flex;
+        padding: 10px;
+        background: rgba(0, 0, 0, 0.5);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      #userInput {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.12);
+        color: white;
+        outline: none;
+        font-size: 16px;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      #sendBtn {
+        background: white;
+        border: none;
+        color: black;
+        padding: 10px 15px;
+        margin-left: 10px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.1s ease;
+      }
+
+      #sendBtn:hover {
+        background: #ddd;
+        transform: scale(1.05);
+      }
+
+      #aboutPopup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.9);
+        background: rgba(0, 0, 0, 0.92);
+        padding: 20px;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 300px;
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        z-index: 200;
+        text-align: left;
+        opacity: 0;
+        transition: all 0.3s ease;
+      }
+
+      #aboutPopup.show {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      #aboutPopup h2 {
+        margin-top: 0;
+        font-weight: 600;
+        text-align: center;
+      }
+
+      #aboutPopup p {
+        margin: 5px 0;
+        font-size: 14px;
+        color: #ccc;
+      }
+
+      #aboutPopup button {
+        display: block;
+        margin: 15px auto 0;
+        background: white;
+        color: black;
+        border: none;
+        padding: 5px 12px;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 13px;
+      }
+
+      .typing {
+        display: flex;
+        gap: 4px;
+        margin-top: 4px;
+      }
+
+      .typing div {
+        width: 8px;
+        height: 8px;
+        background: white;
+        border-radius: 50%;
+        animation: blink 1s infinite;
+      }
+
+      .typing div:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+
+      .typing div:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes blink {
+
+        0%,
+        80%,
+        100% {
+          opacity: 0;
+        }
+
+        40% {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chatbox">
+      <div id="header"> 💬 GPT Chat <div id="menuBtn">☰</div>
         <div id="contextMenu">
-            <div id="aboutOption">About</div>
+          <div id="aboutOption">About</div>
         </div>
-    </div>
-    <div id="messages"></div>
-    <div id="inputArea">
+      </div>
+      <div id="messages"></div>
+      <div id="inputArea">
         <input type="text" id="userInput" placeholder="Ask anything">
         <button id="sendBtn">➤</button>
+      </div>
     </div>
-</div>
+    <div id="aboutPopup">
+      <h2>Author</h2>
+      <p>
+        <b>Name:</b> Raditya Yoga P.
+      </p>
+      <p>
+        <b>Class:</b> XII RPL
+      </p>
+      <p>
+        <b>Show:</b> Eksploitasi, Modder, And Osint
+      </p>
+      <p>
+        <b>Personality:</b> Silent
+      </p>
+      <button id="closePopup">Tutup</button>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script>
+      const input = document.getElementById("userInput");
+      const sendBtn = document.getElementById("sendBtn");
+      const messages = document.getElementById("messages");
+      const menuBtn = document.getElementById("menuBtn");
+      const contextMenu = document.getElementById("contextMenu");
+      const aboutPopup = document.getElementById("aboutPopup");
+      const closePopup = document.getElementById("closePopup");
+      input.addEventListener('focus', () => {
+        setTimeout(() => {
+          input.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+          });
+        }, 300);
+      });
 
-<div id="aboutPopup">
-    <h2>Author</h2>
-    <p><b>Name:</b> Raditya Yoga P.</p>
-    <p><b>Class:</b> XII RPL</p>
-    <p><b>Show:</b> Eksploitasi, Modder, And Osint</p>
-    <p><b>Personality:</b> Silent</p>
-    <button id="closePopup">Tutup</button>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-<script>
-const input=document.getElementById("userInput");
-const sendBtn=document.getElementById("sendBtn");
-const messages=document.getElementById("messages");
-const menuBtn=document.getElementById("menuBtn");
-const contextMenu=document.getElementById("contextMenu");
-const aboutPopup=document.getElementById("aboutPopup");
-const closePopup=document.getElementById("closePopup");
-
-input.addEventListener('focus',()=>{setTimeout(()=>{input.scrollIntoView({behavior:"smooth", block:"center"});},300);});
-
-function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
-
-// Type message per chunk dengan fade per chunk
-async function typeMessage(container, text){
-    container.textContent = "";
-    const chunkSize = 5;
-    const delay = 4;
-
-    for(let i = 0; i < text.length; i += chunkSize){
-        const chunk = document.createElement("span");
-        chunk.textContent = text.slice(i, i + chunkSize);
-        chunk.style.opacity = 0;
-        chunk.style.transition = "opacity 0.25s";
-        container.appendChild(chunk);
-        requestAnimationFrame(()=>{chunk.style.opacity = 1;});
-        messages.scrollTop = messages.scrollHeight;
-        await sleep(delay);
-    }
-}
-
-// Typing animation
-function addTypingAnimation(){
-    const typing=document.createElement("div");
-    typing.className="typing";
-    for(let i=0;i<3;i++){
-        const dot=document.createElement("div");
-        typing.appendChild(dot);
-    }
-    messages.appendChild(typing);
-    messages.scrollTop = messages.scrollHeight;
-    return typing;
-}
-
-// Kirim pesan
-async function sendMessage(){
-    if(input.value.trim()==="") return;
-    const userMsg=input.value;
-    addMessage(userMsg,"user");
-    input.value="";
-
-    const typingIndicator = addTypingAnimation();
-
-    try{
-        const res = await fetch("server.php",{method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:"q="+encodeURIComponent(userMsg)});
-        const data = await res.json();
-        messages.removeChild(typingIndicator);
-
-        if(data.status){
-            if(data.message.startsWith("```") && data.message.endsWith("```")){
-                const div=document.createElement("div");
-                div.className="msg ai code-block";
-                const code=document.createElement("code");
-                code.className="language-js";
-                code.textContent=data.message.slice(3,-3).trim();
-                div.appendChild(code);
-                messages.appendChild(div);
-                Prism.highlightElement(code);
-            }else{
-                const div=document.createElement("div");
-                div.className="msg ai";
-                messages.appendChild(div);
-                await typeMessage(div,data.message);
-            }
-        }else{
-            addMessage("❌ Gagal mengambil jawaban AI","ai");
+      function sleep(ms) {
+        return new Promise(r => setTimeout(r, ms));
+      }
+      // Type message per chunk dengan fade per chunk
+      async function typeMessage(container, text) {
+        container.textContent = "";
+        const chunkSize = 5;
+        const delay = 4;
+        for (let i = 0; i < text.length; i += chunkSize) {
+          const chunk = document.createElement("span");
+          chunk.textContent = text.slice(i, i + chunkSize);
+          chunk.style.opacity = 0;
+          chunk.style.transition = "opacity 0.25s";
+          container.appendChild(chunk);
+          requestAnimationFrame(() => {
+            chunk.style.opacity = 1;
+          });
+          messages.scrollTop = messages.scrollHeight;
+          await sleep(delay);
         }
-    }catch(e){
-        messages.removeChild(typingIndicator);
-        addMessage("❌ Error koneksi ke server","ai");
-    }
-}
-
-// Tambah pesan
-    function addMessage(text, sender){
+      }
+      // Typing animation
+      function addTypingAnimation() {
+        const typing = document.createElement("div");
+        typing.className = "typing";
+        for (let i = 0; i < 3; i++) {
+          const dot = document.createElement("div");
+          typing.appendChild(dot);
+        }
+        messages.appendChild(typing);
+        messages.scrollTop = messages.scrollHeight;
+        return typing;
+      }
+      // Kirim pesan
+      async function sendMessage() {
+        if (input.value.trim() === "") return;
+        const userMsg = input.value;
+        addMessage(userMsg, "user");
+        input.value = "";
+        const typingIndicator = addTypingAnimation();
+        try {
+          const res = await fetch("server.php", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: "q=" + encodeURIComponent(userMsg)
+          });
+          const data = await res.json();
+          messages.removeChild(typingIndicator);
+          if (data.status) {
+            if (data.message.startsWith("```") && data.message.endsWith("```")) {
+              const div = document.createElement("div");
+              div.className = "msg ai code-block";
+              const code = document.createElement("code");
+              code.className = "language-js";
+              code.textContent = data.message.slice(3, -3).trim();
+              div.appendChild(code);
+              messages.appendChild(div);
+              Prism.highlightElement(code);
+            } else {
+              const div = document.createElement("div");
+              div.className = "msg ai";
+              messages.appendChild(div);
+              await typeMessage(div, data.message);
+            }
+          } else {
+            addMessage("❌ Gagal mengambil jawaban AI", "ai");
+          }
+        } catch (e) {
+          messages.removeChild(typingIndicator);
+          addMessage("❌ Error koneksi ke server", "ai");
+        }
+      }
+      // Tambah pesan
+      function addMessage(text, sender) {
         const div = document.createElement("div");
         div.className = "msg " + sender;
-
-        div.innerHTML = text.replace(/\n/g, "<br>");
-
-        messages.appendChild(div);
-        messages.scrollTop = messages.scrollHeight;
-    }
-
-input.addEventListener("keypress",e=>{if(e.key==="Enter")sendMessage();});
-sendBtn.addEventListener("click",sendMessage);
-
-menuBtn.addEventListener("click",e=>{ e.stopPropagation(); contextMenu.style.display=contextMenu.style.display==="block"?"none":"block"; });
-document.addEventListener("click",()=>{ contextMenu.style.display="none"; });
-document.getElementById("aboutOption").addEventListener("click",e=>{ e.stopPropagation(); contextMenu.style.display="none"; aboutPopup.classList.add("show"); aboutPopup.style.display="block"; });
-closePopup.addEventListener("click",()=>{ aboutPopup.classList.remove("show"); setTimeout(()=>aboutPopup.style.display="none",300); });
-document.addEventListener("keydown",e=>{ if(e.key==="Escape" && aboutPopup.style.display==="block"){ aboutPopup.classList.remove("show"); setTimeout(()=>aboutPopup.style.display="none",300); } });
-</script>
-</body>
+        div.innerHTML = text.replace(/\n/g, " < br > ");
+          messages.appendChild(div); messages.scrollTop = messages.scrollHeight;
+        }
+        input.addEventListener("keypress", e => {
+          if (e.key === "Enter") sendMessage();
+        });
+        sendBtn.addEventListener("click", sendMessage);
+        menuBtn.addEventListener("click", e => {
+          e.stopPropagation();
+          contextMenu.style.display = contextMenu.style.display === "block" ? "none" : "block";
+        });
+        document.addEventListener("click", () => {
+          contextMenu.style.display = "none";
+        });
+        document.getElementById("aboutOption").addEventListener("click", e => {
+          e.stopPropagation();
+          contextMenu.style.display = "none";
+          aboutPopup.classList.add("show");
+          aboutPopup.style.display = "block";
+        });
+        closePopup.addEventListener("click", () => {
+          aboutPopup.classList.remove("show");
+          setTimeout(() => aboutPopup.style.display = "none", 300);
+        });
+        document.addEventListener("keydown", e => {
+          if (e.key === "Escape" && aboutPopup.style.display === "block") {
+            aboutPopup.classList.remove("show");
+            setTimeout(() => aboutPopup.style.display = "none", 300);
+          }
+        });
+    </script>
+  </body>
 </html>
